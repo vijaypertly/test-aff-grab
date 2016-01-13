@@ -114,27 +114,7 @@ class AffiliateProducts{
 							'taxonomies'		=> array('affproduct')
 						)
 					);
-					// Register Taxonomy for Product Categories				
-					/*register_taxonomy(	"affcategory", 
-									array(	"affproduct"	), 
-									array (	"hierarchical" 		=> true, 
-											"label" 			=> "Aff Product Category", 
-											'labels' 			=> array(	'name' 				=> __('Aff Product Categories'),
-																			'singular_name' 	=> __('Aff Product Category'),
-																			'search_items' 		=> __('Search Aff Products'),
-																			'popular_items' 	=> __('Popular Aff Product Categories'),
-																			'all_items' 		=> __('All Aff Product Categories'),
-																			'parent_item' 		=> __('Parent Aff Product Category'),
-																			'parent_item_colon' => __('Parent Aff Product Category:'),
-																			'edit_item' 		=> __('Edit Aff Product Category'),
-																			'update_item'		=> __('Update Aff Product Category'),
-																			'add_new_item' 		=> __('Add New Aff Product Category'),
-																			'new_item_name' 	=> __('New Aff Product Category Name')	), 
-											'public' 			=> true,
-											'show_ui' 			=> true,
-											'show_admin_column' => true,
-											'rewrite' => true)
-									);*/							
+											
 	}		
 
 	/*
@@ -149,7 +129,7 @@ class AffiliateProducts{
 	* Remove Custom Post Type from admin menu
 	*/
 	function aff_remove_menu_items() {		
-		//remove_menu_page( 'edit.php?post_type=affproduct' );		
+		remove_menu_page( 'edit.php?post_type=affproduct' );		
 	}
 	
 	/*
@@ -174,19 +154,18 @@ class AffiliateProducts{
             <form class="validate" id="ap-settings-initail" name="ap-settings-initial" method="post" action="<?php echo admin_url(); ?>options.php">            	
 				<?php settings_fields( 'my_options_initial' ); ?>            				
 				<?php submit_button('Refesh Affiliate Products');  ?>			
-			</form>
-            
-            
-			
+			</form>                        			
 		</div>
 	<?php 	
 	}
+	
 	/*
 	* Register Affiliate settings data for Initial
 	*/
 	public function register_initial_data () {
 		register_setting( 'my_options_initial', 'aff_settings_initialize', array($this,'aff_settings_initial') ); 
 	} 
+	
 	/*
 	* Store Affiliate settings data for Initial
 	*/
@@ -194,7 +173,8 @@ class AffiliateProducts{
 		$options['is_aff_initial'] = sanitize_text_field('yes');
 		
 		// Data Grabing		
-		//AffFns::runUpdate();
+		$run = new AffFns();
+		$run->runUpdate();
 		return $options;		
 	}		
 	
@@ -214,7 +194,7 @@ class AffiliateProducts{
 			if($my_query->have_posts()) :
 			 	while($my_query->have_posts()) : $my_query->the_post(); 
 					 $id = get_the_ID();					
-					 $image = get_post_meta($id,'image', true);
+					 $image = get_post_meta($id,'aff_image', true);
 					 $str .= '<li>';
 					 if(!empty($image)){
 						$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.$image.'" width="128" height="128"></a></p>';
@@ -254,8 +234,9 @@ class AffiliateProducts{
 					   $str .= '<div class="entry">';
 					   $str .= get_the_content();	
 					   $str .= '<ul id="aff-listings">';
-					   		$id = get_the_ID();					
-							 $image = get_post_meta($id,'image', true);
+					   		$id = get_the_ID();	
+							$image = get_post_meta($id,'aff_image', true);
+							
 							 $str .= '<li>';
 							 if(!empty($image)){
 								$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.$image.'" ></a></p>';
@@ -269,7 +250,7 @@ class AffiliateProducts{
 					   			
 							$str .= '<h3>Product Price Comparision</h3>';																 
 							$str .= '<table>';
-							$query = "SELECT * FROM ".$wpdb->prefix."affiliate_products";
+							$query = "SELECT * FROM ".$wpdb->prefix."affiliate_products where product_id=$id"; 
 							$pageposts = $wpdb->get_results($query, OBJECT);																												
 						    foreach($pageposts as $cps) :								
 								$query = "SELECT * FROM ".$wpdb->prefix."posts where post_type='affstore' and ID=".$cps->store_id;
@@ -293,13 +274,7 @@ class AffiliateProducts{
 		
 		return $str;
 		
-	}
-	
-	
-	
-	
-	
-	
+	}	
 
 }
 

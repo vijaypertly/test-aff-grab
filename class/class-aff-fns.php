@@ -78,7 +78,7 @@ class AffFns{
 				AND $wpdb->postmeta.meta_key = 'af_sort_title' 
 				AND $wpdb->postmeta.meta_value = '".$posttitle."' 
 				AND $wpdb->posts.post_status = 'publish' 
-				AND $wpdb->posts.post_type = 'affstore'
+				AND $wpdb->posts.post_type = 'affproduct'
 				ORDER BY $wpdb->posts.post_date DESC
 			";
 			$existing_post = $wpdb->get_row($querystr, ARRAY_A);
@@ -88,7 +88,7 @@ class AffFns{
 			}else{
 				// Create post object
 				$product_post = array(
-					'post_type'     => 'affstore',
+					'post_type'     => 'affproduct',
 					'post_title'    => $args['title'],
 					'post_status'   => 'publish'
 				);
@@ -179,17 +179,19 @@ class AffFns{
 	* runUpdate 
 	*/
 	public function runUpdate(){
-		include "simple_html_dom.php";
+		
 		$stores = $this->getAllStores();
 		if(isset($stores) && !empty($stores)){
 			foreach($stores as $store){
-				if(isset($store->post_content) && !empty($store->post_content)){
+				if(isset($store->post_excerpt) && !empty($store->post_excerpt)){
 					
 					$store_id = $store->ID;
-					$siteUrl = $store->post_content
+					$siteUrl = $store->post_excerpt;
 					$domainArray = parse_url($siteUrl);
 					$domainName = $domainArray['host'];
+					$html = file_get_html($siteUrl);
 					if($domainName == 'legen.dk' || $domainName == 'http://legen.dk' || $domainName == 'https://legen.dk' || $domainName == 'www.legen.dk' || $domainName == 'http://www.legen.dk' || $domainName == 'https://www.legen.dk'){
+						$domainName = 'http://www.legen.dk';
 						$productHtmls = $html->find('.ProductList_Custom_TBL tr');
 						if(!empty($productHtmls)){
 							foreach($productHtmls as $rows){
@@ -228,6 +230,7 @@ class AffFns{
 						}
 					}
 					if($domainName == 'legekaeden.dk' || $domainName == 'http://legekaeden.dk' || $domainName == 'https://legekaeden.dk' || $domainName == 'www.legekaeden.dk' || $domainName == 'http://www.legekaeden.dk' || $domainName == 'https://www.legekaeden.dk'){
+						$domainName = 'http://www.legekaeden.dk';
 						$html = file_get_html($siteUrl);
 
 						$productHtmls = $html->find('#productsearchresult li');

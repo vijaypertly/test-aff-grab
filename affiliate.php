@@ -51,6 +51,7 @@ if (!defined('AP_PLUGIN_HTML_DIR') ){
 
 require_once AP_PLUGIN_DIR.DS.'class'.DS.'class-aff.php';
 require_once AP_PLUGIN_DIR.DS.'class'.DS.'class-aff-fns.php';
+include_once AP_PLUGIN_DIR.DS.'class'.DS.'simple_html_dom.php';
 new AffiliateProducts();
 
 register_activation_hook( __FILE__, array('AffFns', 'activatePlugin') );
