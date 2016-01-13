@@ -194,7 +194,7 @@ class AffiliateProducts{
 		$options['is_aff_initial'] = sanitize_text_field('yes');
 		
 		// Data Grabing		
-		
+		//AffFns::runUpdate();
 		return $options;		
 	}		
 	
