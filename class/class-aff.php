@@ -222,8 +222,9 @@ class AffiliateProducts{
 	*/
 	public function AffSingleProduct($atts){
 		global $wpdb;
-		$pdata = extract(shortcode_atts(array( "pid" => '' ), $atts)); 				
-		
+		$pdata = extract(shortcode_atts(array( "pid" => '' ), $atts));
+        $pid = !empty($pid)?$pid:get_the_ID();
+
 		$str = '';
 		$str .= '<div id="blog">';
 		$my_query = new WP_Query('post_type=affproduct&p='.$pid.'&posts_per_page=-1');
@@ -232,7 +233,7 @@ class AffiliateProducts{
 				  $str .= '<div class="post" id="aff-listing-wrap">'; 
 					   $str .= '<h1><a href="'.get_the_permalink().'">'.get_the_title().'</a></h1>';
 					   $str .= '<div class="entry">';
-					   $str .= get_the_content();	
+					   //$str .= get_the_content();
 					   $str .= '<ul id="aff-listings">';
 					   		$id = get_the_ID();	
 							$image = get_post_meta($id,'aff_image', true);
@@ -257,9 +258,9 @@ class AffiliateProducts{
 								$store = $wpdb->get_row($query, OBJECT);															 
 								
 								 $str .= '<tr>';
-									 $str .= '<td><a href = "'.$store->post_excerpt.'">'.$store->post_title.'</a></td>';
+									 $str .= '<td><a target="_blank" href = "'.$store->post_excerpt.'">'.$store->post_title.'</a></td>';
 									 $str .= '<td>'.$cps->product_price.' DKK</td>';
-									 $str .= '<td><a href = "'.$store->post_excerpt.'"><button class="">Go to Store >></button></a></td>';
+									 $str .= '<td><a target="_blank" href = "'.$cps->product_url.'"><button class="">Go to Store >></button></a></td>';
 								 $str .= '</tr>';
 								 
 							endforeach; 

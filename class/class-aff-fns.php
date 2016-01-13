@@ -84,12 +84,17 @@ class AffFns{
 			$existing_post = $wpdb->get_row($querystr, ARRAY_A);
 			$postid = 0;
 			if(!empty($existing_post)){				
-				$postid = $existing_post['ID'];		
+				$postid = $existing_post['ID'];
+                $existing_price = get_post_meta($postid,'aff_price');
+                if($existing_price > $args['price']){
+                    update_post_meta($postid,'aff_price',$args['price']);
+                }
 			}else{
 				// Create post object
 				$product_post = array(
 					'post_type'     => 'affproduct',
 					'post_title'    => $args['title'],
+					'post_content'    => "[AffSingleView]",
 					'post_status'   => 'publish'
 				);
 				// Insert the post into the database
