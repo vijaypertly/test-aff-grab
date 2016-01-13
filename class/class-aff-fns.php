@@ -209,6 +209,12 @@ class AffFns{
 
 									$product = array();
 									$product['id']= $productId;
+									$product['original_title']= $title;								
+									$title = htmlentities($title, ENT_QUOTES, UTF-8);
+									$replaceArray = array('-',',','.', '  ');
+									$replaceTo = array('','','', ' ');
+									$title = str_replace($replaceArray, $replaceTo,$title);
+									
 									$product['title']= $title;
 									$product['url']= $productLink;
 									$product['image']= $productImage;
@@ -233,16 +239,23 @@ class AffFns{
 								$price = $rows->find('.price-box', 0)->innertext;
 								$productImage = $domainName.$rows->find('figure img', 0)->getAttribute('data-src');
 								$productLink = $domainName.$rows->find('.link-product-page', 0)->href;
-
+								
 								$product = array();
-								$product['id']= $productId;
+								$product['id']= $productId;								
+								$product['original_title']= $title;								
+								$title = htmlentities($title, ENT_QUOTES, UTF-8);
+								$replaceArray = array('-',',','.', '  ');
+								$replaceTo = array('','','', ' ');
+								$title = str_replace($replaceArray, $replaceTo,$title);
+
 								$product['title']= $title;
 								$product['url']= $productLink;
 								$product['image']= $productImage;
 								$product['price']= $price;
 								$product['store_id']= $store_id;
 									
-								$result = $this->insertOrUpdateProperty($product);							}
+								$result = $this->insertOrUpdateProperty($product);							
+							}
 						}
 					}
 				}
