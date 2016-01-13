@@ -288,7 +288,7 @@ class AffiliateProducts{
 							$str .= '<ol>';
 						    foreach($myposts as $post) :								 
 								 setup_postdata($post);
-								 $image = get_post_meta($post->ID,'image', true);
+								 $image = get_post_meta($post->ID,'aff_image', true);
 								 $str .= '<li>';
 								 if(!empty($image)){
 								 	$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.$image.'" width="128" height="128"></a></p>';
@@ -296,7 +296,7 @@ class AffiliateProducts{
 									$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png" width="128" height="128"></a></p>'; 
 								 }
 								 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
-								 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($post->ID,'price', true).'</a></p>';
+								 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($post->ID,'aff_price', true).'</a></p>';
 								 $str .= '</li>';
 							endforeach; wp_reset_postdata();
 							$str .= '</ol>';
