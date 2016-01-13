@@ -95,8 +95,13 @@ class AffFns{
 				// Insert the post into the database
 				$postid = wp_insert_post( $product_post );	
 				update_post_meta($postid,'af_sort_title',$posttitle);
+				update_post_meta($postid,'aff_image',$args['image']);
+				update_post_meta($postid,'aff_price',$args['price']);
 			}
-			if($postid){				
+			if($postid){
+				update_post_meta($postid,'aff_image',$args['image']);
+				update_post_meta($postid,'aff_price',$args['price']);
+				
 				$query = "
 				SELECT ".$wpdb->prefix."affiliate_products.* 
 					FROM ".$wpdb->prefix."affiliate_products
@@ -170,7 +175,80 @@ class AffFns{
 		}
 		return false;		
 	}
-    
+    /*
+	* runUpdate 
+	*/
+	public function runUpdate(){
+		include "simple_html_dom.php";
+		$stores = $this->getAllStores();
+		if(isset($stores) && !empty($stores)){
+			foreach($stores as $store){
+				if(isset($store->post_content) && !empty($store->post_content)){
+					
+					$store_id = $store->ID;
+					$siteUrl = $store->post_content
+					$domainArray = parse_url($siteUrl);
+					$domainName = $domainArray['host'];
+					if($domainName == 'legen.dk' || $domainName == 'http://legen.dk' || $domainName == 'https://legen.dk' || $domainName == 'www.legen.dk' || $domainName == 'http://www.legen.dk' || $domainName == 'https://www.legen.dk'){
+						$productHtmls = $html->find('.ProductList_Custom_TBL tr');
+						if(!empty($productHtmls)){
+							foreach($productHtmls as $rows){
+								foreach($rows->find('.produktboks') as $singleProduct){
+
+									$productLink = $domainName.$singleProduct->find('tr td a', 0)->href;
+
+									$productImage = $domainName.$singleProduct->find('tr td a img', 0)->src;
+
+									$title = $singleProduct->find('tr td h4 u a', 0)->innertext;
+
+									$mrp = $singleProduct->find('tr td strike', 0)->innertext;
+
+									$price = $singleProduct->find('font span[itemprop=price]', 0)->innertext;
+
+									$productId= intval(preg_replace('/[^0-9]+/', '', $title), 10);
+
+									$product = array();
+									$product['id']= $productId;
+									$product['title']= $title;
+									$product['url']= $productLink;
+									$product['image']= $productImage;
+									$product['mrp']= $mrp;
+									$product['price']= $price;
+									$product['store_id']= $store_id;
+									
+									$result = $this->insertOrUpdateProperty($product);
+								}
+							}
+						}
+					}
+					if($domainName == 'legekaeden.dk' || $domainName == 'http://legekaeden.dk' || $domainName == 'https://legekaeden.dk' || $domainName == 'www.legekaeden.dk' || $domainName == 'http://www.legekaeden.dk' || $domainName == 'https://www.legekaeden.dk'){
+						$html = file_get_html($siteUrl);
+
+						$productHtmls = $html->find('#productsearchresult li');
+						if(!empty($productHtmls)){
+							foreach($productHtmls as $rows){
+
+								$title = $rows->find('.product-name', 0)->innertext;
+								$productId = intval(preg_replace('/[^0-9]+/', '', $title), 10);
+								$price = $rows->find('.price-box', 0)->innertext;
+								$productImage = $domainName.$rows->find('figure img', 0)->getAttribute('data-src');
+								$productLink = $domainName.$rows->find('.link-product-page', 0)->href;
+
+								$product = array();
+								$product['id']= $productId;
+								$product['title']= $title;
+								$product['url']= $productLink;
+								$product['image']= $productImage;
+								$product['price']= $price;
+								$product['store_id']= $store_id;
+									
+								$result = $this->insertOrUpdateProperty($product);							}
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 ?>
