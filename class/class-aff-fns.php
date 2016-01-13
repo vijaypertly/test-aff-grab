@@ -26,6 +26,7 @@ class AffFns{
 		  `product_url` text,
 		  `product_images` longtext,
 		  `product_id` bigint(20) DEFAULT NULL,
+		  `product_json` longtext,
 		  `store_id` bigint(20) DEFAULT NULL,		  
 		  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		  `modified` datetime DEFAULT NULL,		  
