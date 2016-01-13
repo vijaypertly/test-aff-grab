@@ -14,5 +14,8 @@
 	padding:0;	
 }
 #aff-listings li{
-	list-style:none;	
+	list-style:none;
+	display:inline-block;
+	vertical-align:top;
+	margin:20px;	
 }

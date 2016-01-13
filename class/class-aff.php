@@ -15,9 +15,9 @@ class AffiliateProducts{
 		add_action( 'admin_menu', array($this, 'aff_remove_menu_items') );
 		add_action('do_meta_boxes', array($this, 'custom_post_type_boxes') );
 		add_action('admin_menu', array($this,'register_aff_submenu_page'));   
-		add_action( 'admin_init', array($this,'register_initial_data') );
-		add_action( 'admin_init', array($this,'register_my_setting') );
-		add_shortcode( 'AffiliateListing', array($this,'AffListing'));  		   
+		add_action( 'admin_init', array($this,'register_initial_data') );		
+		add_shortcode( 'AffiliateListing', array($this,'AffListing'));  
+		add_shortcode( 'AffSingleView', array($this,'AffSingleProduct')); 			   
     }
 	
     /*
@@ -169,33 +169,14 @@ class AffiliateProducts{
 		<div class="wrap">
 			<h2 id="add-new-user"> Affiliate Product Settings</h2>
 			<?php settings_errors(); ?>
-            <?php //if( $optsinit['is_aff_initial'] != 'yes' ){ ?> 
-            <h3>General Options</h3>
+            
+           
             <form class="validate" id="ap-settings-initail" name="ap-settings-initial" method="post" action="<?php echo admin_url(); ?>options.php">            	
 				<?php settings_fields( 'my_options_initial' ); ?>            				
-				<?php submit_button('Initial Affiliate Product Setup');  ?>			
+				<?php submit_button('Refesh Affiliate Products');  ?>			
 			</form>
-            <?php //} ?>
-            <h3>Additional Options</h3>
-			<form class="validate" id="ap-settings" name="ap-settings" method="post" action="<?php echo admin_url(); ?>options.php">
-				<?php settings_fields( 'my_options_aff' ); ?>            
-				<table class="form-table">
-					<tbody>  
-                    <tr class="form-field form-required">
-						<th scope="row"><label for="pt-color">Need to Refresh / Update Affiliate Products  </label></th>
-						<td><div class="form-item">
-                        	<label for="meta-checkbox">
-                                <input type="checkbox" name="is_aff_update" id="is_aff_update" value="yes" 
-                                <?php if ( isset ( $opts['is_aff_update'] ) ) checked( $opts['is_aff_update'], 'yes' ); ?> />                                
-                            </label>							
-							</div>
-						</td>
-					</tr>              					
-					                          
-					</tbody>
-				</table>
-				<?php submit_button();  ?>			
-			</form>
+            
+            
 			
 		</div>
 	<?php 	
@@ -210,30 +191,18 @@ class AffiliateProducts{
 	* Store Affiliate settings data for Initial
 	*/
 	public function aff_settings_initial($options){		 
-		$options['is_aff_initial'] = sanitize_text_field('yes');		
+		$options['is_aff_initial'] = sanitize_text_field('yes');
+		
+		// Data Grabing		
 		
 		return $options;		
-	}
-	
-	/*
-	* Register Affiliate settings data
-	*/
-	public function register_my_setting() {
-		register_setting( 'my_options_aff', 'aff_settings', array($this,'aff_settings_options') ); 
-	} 
-	/*
-	* Store Affiliate settings data
-	*/
-	public function aff_settings_options($options){		
-		$options['is_aff_update'] = sanitize_text_field( (isset($_POST['is_aff_update'])) ? $_POST['is_aff_update'] : '' );		
-		
-		return $options;		
-	}
+	}		
 	
 	/* 
 	* Display Product Listing
 	*/
-	public function AffListing(){
+	public function AffListing($atts){
+		$pdata = extract(shortcode_atts(array( "pid" => '' ), $atts)); 
 		global $wpdb;
 		$str = '';
 		$str .= '<div id="blog">';
@@ -244,7 +213,7 @@ class AffiliateProducts{
 		   $str .= '<ul id="aff-listings">';
 			if($my_query->have_posts()) :
 			 	while($my_query->have_posts()) : $my_query->the_post(); 
-					$id = get_the_ID();					
+					 $id = get_the_ID();					
 					 $image = get_post_meta($id,'image', true);
 					 $str .= '<li>';
 					 if(!empty($image)){
@@ -253,12 +222,12 @@ class AffiliateProducts{
 						$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png" width="128" height="128"></a></p>'; 
 					 }
 					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
-					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($id,'price', true).'</a></p>';
-					 $str .= '</li>';
-					 wp_reset_postdata();
+					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($id,'price', true).'$100.00</a></p>';
+					 $str .= '</li>';					 
 												  
 				 endwhile;
-				 $str .= '</ol>';
+				 wp_reset_postdata();
+				 $str .= '</ul>';
 				 $str .= '</div>';				
 			endif;
 		$str .= '</div>';
@@ -271,38 +240,54 @@ class AffiliateProducts{
 	/* 
 	* Display Product Listing
 	*/
-	public function SingleProduct(){
+	public function AffSingleProduct($atts){
 		global $wpdb;
+		$pdata = extract(shortcode_atts(array( "pid" => '' ), $atts)); 				
+		
 		$str = '';
 		$str .= '<div id="blog">';
-		$my_query = new WP_Query('post_type=affproduct&posts_per_page=-1');
+		$my_query = new WP_Query('post_type=affproduct&p='.$pid.'&posts_per_page=-1');
 		if($my_query->have_posts()) :
 			 while($my_query->have_posts()) : $my_query->the_post();
-				  $str .= '<div class="post">'; 
+				  $str .= '<div class="post" id="aff-listing-wrap">'; 
 					   $str .= '<h1><a href="'.get_the_permalink().'">'.get_the_title().'</a></h1>';
 					   $str .= '<div class="entry">';
-					   $str .= get_the_content();														
-							$count_posts = wp_count_posts();							
-							$published_posts = $count_posts->publish;
-							$myposts = get_posts(array('posts_per_page'=>$published_posts)); 
-							$str .= '<ol>';
-						    foreach($myposts as $post) :								 
-								 setup_postdata($post);
-								 $image = get_post_meta($post->ID,'aff_image', true);
-								 $str .= '<li>';
-								 if(!empty($image)){
-								 	$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.$image.'" width="128" height="128"></a></p>';
-								 }else{
-									$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png" width="128" height="128"></a></p>'; 
-								 }
-								 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
-								 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($post->ID,'aff_price', true).'</a></p>';
-								 $str .= '</li>';
-							endforeach; wp_reset_postdata();
-							$str .= '</ol>';
+					   $str .= get_the_content();	
+					   $str .= '<ul id="aff-listings">';
+					   		$id = get_the_ID();					
+							 $image = get_post_meta($id,'image', true);
+							 $str .= '<li>';
+							 if(!empty($image)){
+								$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.$image.'" ></a></p>';
+							 }else{
+								$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png"></a></p>'; 
+							 }
+							 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
+							 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($id,'price', true).'$100.00</a></p>';
+							 $str .= '</li>';
+							 $str .= '</ul>';
+					   			
+							$str .= '<h3>Product Price Comparision</h3>';																 
+							$str .= '<table>';
+							$query = "SELECT * FROM ".$wpdb->prefix."affiliate_products";
+							$pageposts = $wpdb->get_results($query, OBJECT);																												
+						    foreach($pageposts as $cps) :								
+								$query = "SELECT * FROM ".$wpdb->prefix."posts where post_type='affstore' and ID=".$cps->store_id;
+								$store = $wpdb->get_row($query, OBJECT);															 
+								
+								 $str .= '<tr>';
+									 $str .= '<td><a href = "'.$store->post_excerpt.'">'.$store->post_title.'</a></td>';
+									 $str .= '<td>'.$cps->product_price.' DKK</td>';
+									 $str .= '<td><a href = "'.$store->post_excerpt.'"><button class="">Go to Store >></button></a></td>';
+								 $str .= '</tr>';
+								 
+							endforeach; 
+							$str .= '</table>';
+							
 					  $str .= '</div>';
 				  $str .= '</div>';
 			 endwhile;
+			 wp_reset_postdata();
 		endif;
 		$str .= '</div>';
 		
@@ -310,14 +295,10 @@ class AffiliateProducts{
 		
 	}
 	
-	/*add_filter( 'page_template', 'wpa3396_page_template' );
-	public function wpa3396_page_template( $page_template )
-	{
-		if ( is_page( 'my-custom-page-slug' ) ) {
-			$page_template = dirname( __FILE__ ) . '/custom-page-template.php';
-		}
-		return $page_template;
-	} */
+	
+	
+	
+	
 	
 
 }
