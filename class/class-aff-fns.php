@@ -24,7 +24,9 @@ class AffFns{
 		  `product_name` varchar(255) DEFAULT NULL,
 		  `product_price` varchar(255) DEFAULT NULL,
 		  `product_url` text,
-		  `product_images` longtext,		  
+		  `product_images` longtext,
+		  `product_id` bigint(20) DEFAULT NULL,
+		  `store_id` bigint(20) DEFAULT NULL,		  
 		  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		  `modified` datetime DEFAULT NULL,		  
 		  PRIMARY KEY (`id`)
@@ -37,7 +39,8 @@ class AffFns{
 	* Remove affiliate data during uninstallation
 	*/
     public static function deactivatePlugin(){
-        $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}affiliate_products" );
+		global $wpdb; 
+       // $wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}affiliate_products" );
     }
     
 }
