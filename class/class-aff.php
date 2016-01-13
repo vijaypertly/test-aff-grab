@@ -14,8 +14,10 @@ class AffiliateProducts{
 		add_action( 'init', array($this,'add_aff_menu') );	
 		add_action( 'admin_menu', array($this, 'aff_remove_menu_items') );
 		add_action('do_meta_boxes', array($this, 'custom_post_type_boxes') );
-		//add_action('admin_menu', array($this,'register_aff_submenu_page'));   
-		add_action( 'admin_init', array($this,'register_my_setting') );     
+		add_action('admin_menu', array($this,'register_aff_submenu_page'));   
+		add_action( 'admin_init', array($this,'register_initial_data') );
+		add_action( 'admin_init', array($this,'register_my_setting') );
+		add_shortcode( 'AffiliateListing', array($this,'AffListing'));  		   
     }
 	
     /*
@@ -27,10 +29,10 @@ class AffiliateProducts{
 			wp_enqueue_script('jquery');
 		}
 		
-		wp_register_style( 'ap_style', AP_PLUGIN_ASSETS_URL.'/css/ap_style.css' );
+		wp_register_style( 'ap_style', AP_PLUGIN_ASSETS_URL.'/ap_style.css' );
 		wp_enqueue_style( 'ap_style' );
 		
-		wp_register_script('ap_script', AP_PLUGIN_ASSETS_URL.'/js/ap_custom.js', '', '1.0.1');
+		wp_register_script('ap_script', AP_PLUGIN_ASSETS_URL.'/ap_custom.js', '', '1.0.1');
 		wp_enqueue_script('ap_script');		
 
 		wp_localize_script('apscript', 'apvars', array( 'adminurl' => get_admin_url() ) );
@@ -113,7 +115,7 @@ class AffiliateProducts{
 						)
 					);
 					// Register Taxonomy for Product Categories				
-					register_taxonomy(	"affcategory", 
+					/*register_taxonomy(	"affcategory", 
 									array(	"affproduct"	), 
 									array (	"hierarchical" 		=> true, 
 											"label" 			=> "Aff Product Category", 
@@ -132,7 +134,7 @@ class AffiliateProducts{
 											'show_ui' 			=> true,
 											'show_admin_column' => true,
 											'rewrite' => true)
-									);							
+									);*/							
 	}		
 
 	/*
@@ -147,7 +149,7 @@ class AffiliateProducts{
 	* Remove Custom Post Type from admin menu
 	*/
 	function aff_remove_menu_items() {		
-		remove_menu_page( 'edit.php?post_type=affproduct' );		
+		//remove_menu_page( 'edit.php?post_type=affproduct' );		
 	}
 	
 	/*
@@ -161,19 +163,31 @@ class AffiliateProducts{
 	* Affiliate settings page Content
 	*/
 	public function ap_general_settings(){
+		$optsinit = get_option('aff_settings_initialize');
 		$opts = get_option('aff_settings'); 
 		?>
 		<div class="wrap">
 			<h2 id="add-new-user"> Affiliate Product Settings</h2>
-			<?php settings_errors(); ?> 
+			<?php settings_errors(); ?>
+            <?php //if( $optsinit['is_aff_initial'] != 'yes' ){ ?> 
+            <h3>General Options</h3>
+            <form class="validate" id="ap-settings-initail" name="ap-settings-initial" method="post" action="<?php echo admin_url(); ?>options.php">            	
+				<?php settings_fields( 'my_options_initial' ); ?>            				
+				<?php submit_button('Initial Affiliate Product Setup');  ?>			
+			</form>
+            <?php //} ?>
+            <h3>Additional Options</h3>
 			<form class="validate" id="ap-settings" name="ap-settings" method="post" action="<?php echo admin_url(); ?>options.php">
 				<?php settings_fields( 'my_options_aff' ); ?>            
 				<table class="form-table">
 					<tbody>  
                     <tr class="form-field form-required">
-						<th scope="row"><label for="pt-color">Test </label></th>
+						<th scope="row"><label for="pt-color">Need to Refresh / Update Affiliate Products  </label></th>
 						<td><div class="form-item">
-							<input type="text" id="pt-image-height" name="pt-image-height" value="<?php echo esc_attr($opts['pt-image-height']); ?>" />px
+                        	<label for="meta-checkbox">
+                                <input type="checkbox" name="is_aff_update" id="is_aff_update" value="yes" 
+                                <?php if ( isset ( $opts['is_aff_update'] ) ) checked( $opts['is_aff_update'], 'yes' ); ?> />                                
+                            </label>							
 							</div>
 						</td>
 					</tr>              					
@@ -186,6 +200,20 @@ class AffiliateProducts{
 		</div>
 	<?php 	
 	}
+	/*
+	* Register Affiliate settings data for Initial
+	*/
+	public function register_initial_data () {
+		register_setting( 'my_options_initial', 'aff_settings_initialize', array($this,'aff_settings_initial') ); 
+	} 
+	/*
+	* Store Affiliate settings data for Initial
+	*/
+	public function aff_settings_initial($options){		 
+		$options['is_aff_initial'] = sanitize_text_field('yes');		
+		
+		return $options;		
+	}
 	
 	/*
 	* Register Affiliate settings data
@@ -197,32 +225,99 @@ class AffiliateProducts{
 	* Store Affiliate settings data
 	*/
 	public function aff_settings_options($options){		
-		$options['pt-image-height'] = sanitize_text_field( (isset($_POST['pt-image-height'])) ? $_POST['pt-image-height'] : '' );		
+		$options['is_aff_update'] = sanitize_text_field( (isset($_POST['is_aff_update'])) ? $_POST['is_aff_update'] : '' );		
 		
 		return $options;		
 	}
 	
 	/* 
-	* Function to insert product 
+	* Display Product Listing
 	*/
-	public function insertAffProduct(){
-		$post_id = wp_insert_post(array (
-			'post_type' => 'your_post_type',
-			'post_title' => $your_title,
-			'post_content' => $your_content,
-			'post_status' => 'publish',
-			'comment_status' => 'closed',   // if you prefer
-			'ping_status' => 'closed',      // if you prefer
-		));	
-		if($post_id){
-			// insert post meta
-			add_post_meta($post_id, '_your_custom_1', $custom1);
-			add_post_meta($post_id, '_your_custom_2', $custom2);
-			add_post_meta($post_id, '_your_custom_3', $custom3);
-		}
+	public function AffListing(){
+		global $wpdb;
+		$str = '';
+		$str .= '<div id="blog">';
+		$my_query = new WP_Query('post_type=affproduct&posts_per_page=-1');
+		$str .= '<div id="aff-listing-wrap" class="post">'; 
+		   $str .= '<h1><a href="'.get_the_permalink().'">'.get_the_title().'</a></h1>';
+		   $str .= '<div class="entry">';
+		   $str .= '<ul id="aff-listings">';
+			if($my_query->have_posts()) :
+			 	while($my_query->have_posts()) : $my_query->the_post(); 
+					$id = get_the_ID();					
+					 $image = get_post_meta($id,'image', true);
+					 $str .= '<li>';
+					 if(!empty($image)){
+						$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.$image.'" width="128" height="128"></a></p>';
+					 }else{
+						$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png" width="128" height="128"></a></p>'; 
+					 }
+					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
+					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($id,'price', true).'</a></p>';
+					 $str .= '</li>';
+					 wp_reset_postdata();
+												  
+				 endwhile;
+				 $str .= '</ol>';
+				 $str .= '</div>';				
+			endif;
+		$str .= '</div>';
+		$str .= '</div>';
+		
+		return $str;
 		
 	}
-	// title/ price/images(all)/product id
+	
+	/* 
+	* Display Product Listing
+	*/
+	public function SingleProduct(){
+		global $wpdb;
+		$str = '';
+		$str .= '<div id="blog">';
+		$my_query = new WP_Query('post_type=affproduct&posts_per_page=-1');
+		if($my_query->have_posts()) :
+			 while($my_query->have_posts()) : $my_query->the_post();
+				  $str .= '<div class="post">'; 
+					   $str .= '<h1><a href="'.get_the_permalink().'">'.get_the_title().'</a></h1>';
+					   $str .= '<div class="entry">';
+					   $str .= get_the_content();														
+							$count_posts = wp_count_posts();							
+							$published_posts = $count_posts->publish;
+							$myposts = get_posts(array('posts_per_page'=>$published_posts)); 
+							$str .= '<ol>';
+						    foreach($myposts as $post) :								 
+								 setup_postdata($post);
+								 $image = get_post_meta($post->ID,'image', true);
+								 $str .= '<li>';
+								 if(!empty($image)){
+								 	$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.$image.'" width="128" height="128"></a></p>';
+								 }else{
+									$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png" width="128" height="128"></a></p>'; 
+								 }
+								 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
+								 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($post->ID,'price', true).'</a></p>';
+								 $str .= '</li>';
+							endforeach; wp_reset_postdata();
+							$str .= '</ol>';
+					  $str .= '</div>';
+				  $str .= '</div>';
+			 endwhile;
+		endif;
+		$str .= '</div>';
+		
+		return $str;
+		
+	}
+	
+	/*add_filter( 'page_template', 'wpa3396_page_template' );
+	public function wpa3396_page_template( $page_template )
+	{
+		if ( is_page( 'my-custom-page-slug' ) ) {
+			$page_template = dirname( __FILE__ ) . '/custom-page-template.php';
+		}
+		return $page_template;
+	} */
 	
 
 }
