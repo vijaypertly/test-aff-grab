@@ -1,7 +1,10 @@
 <?php
+defined( 'ABSPATH' ) or die('');
 if(class_exists('AffiliateProducts')){ return; }
 class AffiliateProducts{	
-	
+	/*
+	* Initializing class and functions
+	*/ 
 	public function __construct() {	
 		global $wpdb, $post;												
 		add_action('wp_enqueue_scripts', array($this,'add_media_upload_scripts'));						
@@ -9,10 +12,15 @@ class AffiliateProducts{
 		# Register shortcodes	
 		add_filter( 'the_content', 'do_shortcode');	
 		add_action( 'init', array($this,'add_aff_menu') );	
-		add_action('admin_menu', array($this,'register_aff_submenu_page'));   
+		add_action( 'admin_menu', array($this, 'aff_remove_menu_items') );
+		add_action('do_meta_boxes', array($this, 'custom_post_type_boxes') );
+		//add_action('admin_menu', array($this,'register_aff_submenu_page'));   
 		add_action( 'admin_init', array($this,'register_my_setting') );     
     }
-   
+	
+    /*
+	* Register and adding scripts 
+	*/
 	public function add_media_upload_scripts() {    
 		// If Jquery not included already add it now		
 		if( !wp_script_is('jquery', 'enqueued') ){
@@ -27,10 +35,12 @@ class AffiliateProducts{
 
 		wp_localize_script('apscript', 'apvars', array( 'adminurl' => get_admin_url() ) );
 	}
-
-    # Menu
-	public function add_aff_menu(){		
 		
+    /*
+	* Registering Custom Post and Toxonomy 
+	*/
+	public function add_aff_menu(){		
+		// Register Custom Post Type for Affiliate Stores	
 		register_post_type(	'affstore', 
 					array(	'label' 			=> __('Aff Store'),
 							'labels' 			=> array(	'name' 					=> __('Aff Store'),
@@ -63,7 +73,7 @@ class AffiliateProducts{
 							'taxonomies'		=> array('affstore')
 						)
 					);
-					
+		// Register Custom Post Type for Affiliate Products			
 		register_post_type(	'affproduct', 
 					array(	'label' 			=> __('Aff Product'),
 							'labels' 			=> array(	'name' 					=> __('Aff Product'),
@@ -102,7 +112,7 @@ class AffiliateProducts{
 							'taxonomies'		=> array('affproduct')
 						)
 					);
-										
+					// Register Taxonomy for Product Categories				
 					register_taxonomy(	"affcategory", 
 									array(	"affproduct"	), 
 									array (	"hierarchical" 		=> true, 
@@ -125,11 +135,31 @@ class AffiliateProducts{
 									);							
 	}		
 
+	/*
+	* Registering a custom settings page for Affiliate 
+	*/
 	public function register_aff_submenu_page() {
 		add_submenu_page('edit.php?post_type=affstore', 'Aff Product | '. __('Global Settings', 'dbem'), __('Global Settings', 'dbem'), 'activate_plugins', 'affproduct-settings', array($this,'ap_general_settings'));	
 		
 	}
 	
+	/*
+	* Remove Custom Post Type from admin menu
+	*/
+	function aff_remove_menu_items() {		
+		remove_menu_page( 'edit.php?post_type=affproduct' );		
+	}
+	
+	/*
+	* Add Meta Box to get site URL
+	*/
+	public function custom_post_type_boxes(){
+		add_meta_box( 'postexcerpt', __( 'Enter site Url to scrape the data' ), 'post_excerpt_meta_box', 'affstore', 'normal', 'high' );
+	}
+	
+	/* 
+	* Affiliate settings page Content
+	*/
 	public function ap_general_settings(){
 		$opts = get_option('aff_settings'); 
 		?>
@@ -157,16 +187,42 @@ class AffiliateProducts{
 	<?php 	
 	}
 	
+	/*
+	* Register Affiliate settings data
+	*/
 	public function register_my_setting() {
 		register_setting( 'my_options_aff', 'aff_settings', array($this,'aff_settings_options') ); 
 	} 
-		
+	/*
+	* Store Affiliate settings data
+	*/
 	public function aff_settings_options($options){		
 		$options['pt-image-height'] = sanitize_text_field( (isset($_POST['pt-image-height'])) ? $_POST['pt-image-height'] : '' );		
 		
 		return $options;		
 	}
 	
+	/* 
+	* Function to insert product 
+	*/
+	public function insertAffProduct(){
+		$post_id = wp_insert_post(array (
+			'post_type' => 'your_post_type',
+			'post_title' => $your_title,
+			'post_content' => $your_content,
+			'post_status' => 'publish',
+			'comment_status' => 'closed',   // if you prefer
+			'ping_status' => 'closed',      // if you prefer
+		));	
+		if($post_id){
+			// insert post meta
+			add_post_meta($post_id, '_your_custom_1', $custom1);
+			add_post_meta($post_id, '_your_custom_2', $custom2);
+			add_post_meta($post_id, '_your_custom_3', $custom3);
+		}
+		
+	}
+	// title/ price/images(all)/product id
 	
 
 }

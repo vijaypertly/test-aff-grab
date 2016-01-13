@@ -52,5 +52,8 @@ if (!defined('AP_PLUGIN_HTML_DIR') ){
 require_once AP_PLUGIN_DIR.DS.'class'.DS.'class_ap.php';
 new AffiliateProducts();
 
+register_activation_hook( __FILE__, array('AffFns', 'activatePlugin') );
+register_deactivation_hook( __FILE__, array('AffFns', 'deactivatePlugin') );
+
 
 ?>
