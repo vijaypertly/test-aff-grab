@@ -210,7 +210,7 @@ class AffiliateProducts{
 						$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png" width="128" height="128"></a></p>';
 					 }
 					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
-					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($id,'price', true).'$100.00</a></p>';
+					 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($id,'aff_price', true).'</a></p>';
 					 $str .= '</li>';
 
 				 endwhile;
@@ -239,12 +239,11 @@ class AffiliateProducts{
 		if($my_query->have_posts()) :
 			 while($my_query->have_posts()) : $my_query->the_post();
 				  $str .= '<div class="post" id="aff-listing-wrap">';
-					   $str .= '<h1><a href="'.get_the_permalink().'">'.get_the_title().'</a></h1>';
+					   //$str .= '<h1><a href="'.get_the_permalink().'">'.get_the_title().'</a></h1>';
 					   $str .= '<div class="entry">';
 					   //$str .= get_the_content();
 					   $str .= '<ul id="aff-listings">';
-					   		$id = get_the_ID();
-							$image = get_post_meta($id,'aff_image', true);
+							$image = get_post_meta($pid,'aff_image', true);
 
 							 $str .= '<li>';
 							 if(!empty($image)){
@@ -253,13 +252,13 @@ class AffiliateProducts{
 								$str .= '<p><a href = "'.get_the_permalink().'"><img src="'.AP_PLUGIN_ASSETS_URL.'/product-default.png"></a></p>';
 							 }
 							 $str .= '<p><a href = "'.get_the_permalink().'">'.get_the_title().'</a></p>';
-							 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($id,'price', true).'$100.00</a></p>';
+							 $str .= '<p><a href = "'.get_the_permalink().'">'.get_post_meta($pid,'aff_price', true).'</a></p>';
 							 $str .= '</li>';
 							 $str .= '</ul>';
 
 							$str .= '<h3>Product Price Comparision</h3>';
 							$str .= '<table>';
-							$query = "SELECT * FROM ".$wpdb->prefix."affiliate_products where product_id=$id";
+							$query = "SELECT * FROM ".$wpdb->prefix."affiliate_products where product_id='$pid' ORDER BY CONVERT(REPLACE(REPLACE(product_price, ',', ''), ' ', ''), UNSIGNED INTEGER) asc ";
 							$pageposts = $wpdb->get_results($query, OBJECT);
 						    foreach($pageposts as $cps) :
 								$query = "SELECT * FROM ".$wpdb->prefix."posts where post_type='affstore' and ID=".$cps->store_id;
