@@ -3,7 +3,7 @@
 Plugin Name: Affiliate Products
 Plugin URI: http://www.wpsupport.io/
 Description: Affiliate Products listing from different store.
-Author: Vijay M
+Author: Wpsupport
 Text Domain: affiliate-products
 Domain Path: /languages/
 Version: 1.0

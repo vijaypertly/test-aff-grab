@@ -217,7 +217,7 @@ class AffFns{
 									$product = array();
 									$product['id']= $productId;
 									$product['original_title']= $title;								
-									$title = htmlentities($title, ENT_QUOTES, UTF-8);
+									$title = htmlentities($title, ENT_QUOTES, 'UTF-8');
 									$replaceArray = array('-',',','.', '  ');
 									$replaceTo = array('','','', ' ');
 									$title = str_replace($replaceArray, $replaceTo,$title);
@@ -251,7 +251,7 @@ class AffFns{
 								$product = array();
 								$product['id']= $productId;								
 								$product['original_title']= $title;								
-								$title = htmlentities($title, ENT_QUOTES, UTF-8);
+								$title = htmlentities($title, ENT_QUOTES, 'UTF-8');
 								$replaceArray = array('-',',','.', '  ');
 								$replaceTo = array('','','', ' ');
 								$title = str_replace($replaceArray, $replaceTo,$title);
